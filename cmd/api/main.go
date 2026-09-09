@@ -28,6 +28,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /healthz", handlers.Healthz)
+	mux.HandleFunc("GET /listings", handlers.ListAllProducts(db))
 
 	server := &http.Server{
 		Addr:         ":" + cnf.App.Port,
