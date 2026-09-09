@@ -25,11 +25,13 @@ func main() {
 	defer db.Close()
 	log.Println("Connected to database successfully")
 
+	listingHandler := handlers.NewListingHandler(db)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /healthz", handlers.Healthz)
-	mux.HandleFunc("GET /list", handlers.ListAllProducts(db))
-	mux.HandleFunc("DELETE /delete/{id}", handlers.DeleteList(db))
+	mux.HandleFunc("GET /list", listingHandler.ListAllProducts)
+	mux.HandleFunc("DELETE /delete/{id}", listingHandler.DeleteList)
 
 	server := &http.Server{
 		Addr:         ":" + cnf.App.Port,
