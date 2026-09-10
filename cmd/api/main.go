@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -25,7 +26,14 @@ func main() {
 	defer db.Close()
 	log.Println("Connected to database successfully")
 
-	listingHandler := handlers.NewListingHandler(db)
+	loggerHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelInfo,
+	})
+	logger := slog.New(loggerHandler)
+	slog.SetDefault(logger)
+
+	listingHandler := handlers.NewListingHandler(db, logger)
 
 	mux := http.NewServeMux()
 
