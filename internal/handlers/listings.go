@@ -28,7 +28,8 @@ func NewListingHandler(db *sql.DB) *listingHandler {
 }
 
 func (h *listingHandler) ListAllProducts(w http.ResponseWriter, r *http.Request) {
-	rows, err := h.db.Query(
+	ctx := r.Context()
+	rows, err := h.db.QueryContext(ctx,
 		`SELECT id, title, description, price, city, created_at
 			FROM listings
 			ORDER BY created_at DESC
@@ -64,13 +65,13 @@ func (h *listingHandler) ListAllProducts(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *listingHandler) DeleteList(w http.ResponseWriter, r *http.Request) {
-
+	ctx := r.Context()
 	id := r.PathValue("id")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
 		return
 	}
-	_, err := h.db.Exec(`DELETE FROM listings WHERE id = $1`, id)
+	_, err := h.db.ExecContext(ctx, `DELETE FROM listings WHERE id = $1`, id)
 	if err != nil {
 		log.Printf("Delete: %v", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
