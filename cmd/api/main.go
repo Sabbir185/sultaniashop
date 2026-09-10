@@ -14,6 +14,7 @@ import (
 	"github.com/Sabbir185/sultaniashop/internal/config"
 	"github.com/Sabbir185/sultaniashop/internal/db"
 	"github.com/Sabbir185/sultaniashop/internal/handlers"
+	"github.com/Sabbir185/sultaniashop/internal/middleware"
 )
 
 func main() {
@@ -41,9 +42,11 @@ func main() {
 	mux.HandleFunc("GET /list", listingHandler.ListAllProducts)
 	mux.HandleFunc("DELETE /delete/{id}", listingHandler.DeleteList)
 
+	handler := middleware.RequestId(mux)
+
 	server := &http.Server{
 		Addr:         ":" + cnf.App.Port,
-		Handler:      mux,
+		Handler:      handler,
 		ReadTimeout:  time.Second * 10,
 		WriteTimeout: time.Second * 30,
 		IdleTimeout:  time.Second * 60,
