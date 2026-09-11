@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Sabbir185/sultaniashop/internal/httpx"
 	"github.com/Sabbir185/sultaniashop/internal/middleware"
 )
 
@@ -80,7 +81,7 @@ func (h *listingHandler) DeleteList(w http.ResponseWriter, r *http.Request) {
 	_, err := h.db.ExecContext(ctx, `DELETE FROM listing WHERE id = $1`, id)
 	if err != nil {
 		h.logger.Error("delete failed", "requestId", requestId, "id", id, "error", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		httpx.Error(w, http.StatusInternalServerError, "Something went wrong", httpx.CodeInternalError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
