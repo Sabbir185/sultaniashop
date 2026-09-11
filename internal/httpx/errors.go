@@ -29,7 +29,7 @@ type errorEnvelope struct {
 func Error(w http.ResponseWriter, status int, message string, code StatusCode) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(errorEnvelope{
+	_ = json.NewEncoder(w).Encode(errorEnvelope{
 		Error: errorPayload{
 			Code:    code,
 			Message: message,

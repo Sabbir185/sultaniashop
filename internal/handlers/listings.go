@@ -16,7 +16,7 @@ type listing struct {
 	ID          string    `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Price       string    `json:"price"`
+	Price       int64     `json:"price"`
 	City        string    `json:"city"`
 	CreatedAt   time.Time `json:"created_at"`
 }
@@ -88,6 +88,23 @@ func (h *listingHandler) DeleteList(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
 		"message": "deleted successfully",
+	})
+
+}
+
+func (h *listingHandler) CreateListing(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	requestId := middleware.RequestIdFromContext(ctx)
+
+	var payload listing
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		h.logger.Error("decode failed", "requestId", requestId, "error", err)
+		httpx.Error(w, http.StatusBadRequest, "Invalid request payload", httpx.CodeBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{
+		"ok": "ok",
 	})
 
 }
