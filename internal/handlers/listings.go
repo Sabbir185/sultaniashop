@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/Sabbir185/sultaniashop/internal/middleware"
 )
 
 type listing struct {
@@ -69,6 +71,7 @@ func (h *listingHandler) ListAllProducts(w http.ResponseWriter, r *http.Request)
 
 func (h *listingHandler) DeleteList(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	requestId := middleware.RequestIdFromContext(ctx)
 	id := r.PathValue("id")
 	if id == "" {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
@@ -76,7 +79,7 @@ func (h *listingHandler) DeleteList(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := h.db.ExecContext(ctx, `DELETE FROM listing WHERE id = $1`, id)
 	if err != nil {
-		h.logger.Error("delete failed", "id", id, "error", err)
+		h.logger.Error("delete failed", "requestId", requestId, "id", id, "error", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
