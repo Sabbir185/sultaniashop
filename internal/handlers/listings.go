@@ -112,7 +112,14 @@ func (h *listingHandler) CreateListing(w http.ResponseWriter, r *http.Request) {
 	)
 
 	var createdListing listing
-	if err := rows.Scan(&createdListing.ID, &createdListing.Title, &createdListing.Description, &createdListing.Price, &createdListing.City, &createdListing.CreatedAt); err != nil {
+	if err := rows.Scan(
+		&createdListing.ID,
+		&createdListing.Title,
+		&createdListing.Description,
+		&createdListing.Price,
+		&createdListing.City,
+		&createdListing.CreatedAt,
+	); err != nil {
 		h.logger.Error("scan failed", "requestId", requestId, "error", err)
 		httpx.Error(w, http.StatusInternalServerError, "Failed to create listing", httpx.CodeInternalError)
 		return
