@@ -39,9 +39,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /healthz", handlers.Healthz)
-	mux.HandleFunc("GET /list", listingHandler.ListAllProducts)
+	mux.HandleFunc("GET /listings", listingHandler.ListAllProducts)
 	mux.HandleFunc("DELETE /delete/{id}", listingHandler.DeleteList)
-	mux.HandleFunc("POST /listings", listingHandler.DeleteList)
+	mux.HandleFunc("POST /listings", listingHandler.CreateListing)
 
 	handler := middleware.RequestId(mux)
 

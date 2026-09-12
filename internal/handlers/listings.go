@@ -13,12 +13,12 @@ import (
 )
 
 type listing struct {
-	ID          string    `json:"id"`
+	ID          int64     `json:"id,omitempty"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Price       int64     `json:"price"`
+	Price       float64   `json:"price"`
 	City        string    `json:"city"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
 }
 
 type listingHandler struct {
@@ -39,7 +39,7 @@ func (h *listingHandler) ListAllProducts(w http.ResponseWriter, r *http.Request)
 		`SELECT id, title, description, price, city, created_at
 			FROM listings
 			ORDER BY created_at DESC
-			LIMIT 100`)
+			LIMIT 100;`)
 	if err != nil {
 		log.Printf("Query: %v", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -78,7 +78,7 @@ func (h *listingHandler) DeleteList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing ID", http.StatusBadRequest)
 		return
 	}
-	_, err := h.db.ExecContext(ctx, `DELETE FROM listing WHERE id = $1`, id)
+	_, err := h.db.ExecContext(ctx, `DELETE FROM listings WHERE id = $1`, id)
 	if err != nil {
 		h.logger.Error("delete failed", "requestId", requestId, "id", id, "error", err)
 		httpx.Error(w, http.StatusInternalServerError, "Something went wrong", httpx.CodeInternalError)
@@ -103,8 +103,22 @@ func (h *listingHandler) CreateListing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]string{
-		"ok": "ok",
-	})
+	rows := h.db.QueryRowContext(ctx,
+		`
+		INSERT INTO listings (title, description, price, city)
+		VALUES ($1, $2, $3, $4)
+		RETURNING id, title, description, price, city, created_at;`,
+		payload.Title, payload.Description, payload.Price, payload.City,
+	)
 
+	var createdListing listing
+	if err := rows.Scan(&createdListing.ID, &createdListing.Title, &createdListing.Description, &createdListing.Price, &createdListing.City, &createdListing.CreatedAt); err != nil {
+		h.logger.Error("scan failed", "requestId", requestId, "error", err)
+		httpx.Error(w, http.StatusInternalServerError, "Failed to create listing", httpx.CodeInternalError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(createdListing)
 }
